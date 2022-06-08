@@ -14,7 +14,7 @@ class HoikuController extends BaseController
             try {
                 
                 $pdo = new PDO('mysql:host=localhost;dbname=kindergarden','root','');
-                $sql = 'SELECT  id, facility_name, address_prefecture, address_district, address_street ,latitude, longitude FROM facility LIMIT 10';
+                $sql = 'SELECT  A.id, A.facility_name, address_prefecture, address_district, address_street ,latitude, longitude, business_day, quota_0, age_0, quota_1, age_1, quota_2, age_2, quota_3, age_3, quota_4, age_4, quota_5, age_5, operation_method, phone FROM facility A LEFT JOIN availability B ON A.id = B.kindergarden_id LIMIT 10';
                 
                 $intLimit = 10;
                 if (isset($arrQueryStringParams['limit']) && $arrQueryStringParams['limit']) {
@@ -32,7 +32,6 @@ class HoikuController extends BaseController
                 }
                 $pdo = null;
                 
- 
                 $responseData = json_encode($arrHoiku);
 
             } catch (Error $e) {

@@ -94,7 +94,7 @@
 	<script>
 
 		const getHoikuList = async () => {
-			const response = await fetch('http://localhost/hoikusho/index.php/hoiku/list');
+			const response = await fetch('http://localhost/hoiku/index.php/hoiku/list');
 			const hoikuList = await response.json(); //extract JSON from the http response
 			return hoikuList;
 		}
@@ -113,13 +113,32 @@
 
 		getHoikuList().then((hoikuList) => {
 			console.log(hoikuList)
-			debugger;
 			for(var i = 0; i < hoikuList.length; i++) {
 				markers.push(L.marker([hoikuList[i]['latitude'],hoikuList[i]['longitude']]));
 				markers[i].addTo(map);
+				markers[i].on('click', function(e){
+
+					var i = 0;
+					for(i; i < markers.length; i++) {
+						if(markers[i] == e.sourceTarget)
+							break;
+					}
+
+					popup
+					.setLatLng(e.latlng)
+					.setContent("<p>"+ hoikuList[i]["facility_name"] + "</p><p>電話番号:" + hoikuList[i]["phone"] + "</p>" + "<p>")
+					.openOn(map);		
+				});
 			} 
 
 		});
+		var popup = L.popup();
+		function onMarker2Click(e) {
+			popup
+				.setLatLng(e.latlng)
+				.setContent("<p>"+ facilityName + "</p><p>clickで表示されます。</p>" + e.latlng.toString())
+				.openOn(map);
+		}
 		
 		// //markers.push(L.marker(['.$row['latitude'].','.$row['longitude'].']));
 		
