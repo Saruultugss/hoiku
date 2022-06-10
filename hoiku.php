@@ -126,7 +126,7 @@
 
 					popup
 					.setLatLng(e.latlng)
-					.setContent("<p>"+ hoikuList[i]["facility_name"] + "</p><p>電話番号:" + hoikuList[i]["phone"] + "</p>" + "<p>")
+					.setContent("<p>"+ hoikuList[i]["facility_name"] + "</p><p>電話番号:" + hoikuList[i]["phone"] + "</p>" + "<p> ０歳入所可能人数: " + hoikuList[i]["age_0"] +"</p>")
 					.openOn(map);		
 				});
 			} 
