@@ -9,6 +9,22 @@
 
 	</head>
 	<body>
+		<nav class="bg-white py-2 md:py-4">
+			<div class="container px-4 mx-auto md:flex md:items-center">
+
+			<div class="flex justify-between items-center">
+				<a href="#" class="font-bold text-xl text-indigo-600">保育所検索システム</a>
+				<button class="border border-solid border-gray-600 px-3 py-1 rounded text-gray-600 opacity-50 hover:opacity-75 md:hidden" id="navbar-toggle">
+				<i class="fas fa-bars"></i>
+				</button>
+			</div>
+
+			<div class="hidden md:flex flex-col md:flex-row md:ml-auto mt-3 md:mt-0" id="navbar-collapse">
+				<a href="hoiku.php" class="p-2 lg:px-4 md:mx-2 text-gray-600 rounded hover:bg-gray-200 hover:text-gray-700 transition-colors duration-300">ホーム</a>
+				<a href="#" class="p-2 lg:px-4 md:mx-2 text-indigo-600 text-center border border-solid border-indigo-600 rounded hover:bg-indigo-600 hover:text-white transition-colors duration-300 mt-1 md:mt-0 md:ml-1">比較</a>
+			</div>
+			</div>
+		</nav>
 		<div class="container">
 			<div class="grid grid-cols-3 gap-4">
 				<div class="col-span-2">
@@ -20,11 +36,26 @@
 					<div class="mt-8 max-w-md">
 						<div class="grid grid-cols-1 gap-6">
 
+							<label class="block">
+								<span class="text-gray-700">区名</span>
+								<select id="districtSelect" class="
+									block
+									w-full
+									mt-1
+									rounded-md
+									bg-gray-100
+									border-transparent
+									focus:border-gray-500 focus:bg-white focus:ring-0
+								">
+									<option></option>
+								</select>
+							</label>
+
 							<div class="block">
 								<div class="mt-2">
 								<div>
 									<label class="inline-flex items-center">
-									<input type="checkbox" class="
+									<input type="checkbox" id="available" class="
 										rounded
 										bg-gray-200
 										border-transparent
@@ -50,21 +81,6 @@
 									focus:border-gray-500 focus:bg-white focus:ring-0
 								" placeholder="">
 							</label>
-							
-							<label class="block">
-								<span class="text-gray-700">区名</span>
-								<select id="districtSelect" class="
-									block
-									w-full
-									mt-1
-									rounded-md
-									bg-gray-100
-									border-transparent
-									focus:border-gray-500 focus:bg-white focus:ring-0
-								">
-									<option></option>
-								</select>
-							</label>
 						</div>
 					</div>
 				</div>
@@ -72,6 +88,15 @@
 			
 		</div>
 	<script>
+		let toggleBtn = document.querySelector("#navbar-toggle");
+		let collapse = document.querySelector("#navbar-collapse");
+
+		toggleBtn.onclick = () => {
+			collapse.classList.toggle("hidden");
+			collapse.classList.toggle("flex");
+		};
+
+
 		serialize = function(obj) {
 			var str = [];
 			for (var p in obj)
@@ -95,7 +120,10 @@
 		}
 
 		var markers = [];
-		document.getElementById('mapid').setAttribute("style","height:" + screen.height +"px"); 
+		//set map container height
+		var mapHeight = screen.height - 250;
+		document.getElementById('mapid').setAttribute("style","height:" + mapHeight +"px");
+
 		var map = L.map('mapid',{
 			center:[35.5423607,139.6395105],
 			zoom: 17,
@@ -119,7 +147,10 @@
 				opt.innerHTML = districtList[i].address_district.replace('横浜市', '');
 				select.appendChild(opt);
 			}
-			
+			document.getElementById('districtSelect').value = '横浜市西区';
+			params = collectParams();
+			removeMarkers();
+			fetchHoikuList(params);
 		})
 
 		const fetchHoikuList = (params) => { 
@@ -129,6 +160,7 @@
 					lat += parseFloat(hoikuList[i]['latitude']);
 					long += parseFloat(hoikuList[i]['longitude']);
 					var marker = null;
+					//change marker icon depends on availability
 					if(hoikuList[i]['total'] > 0) {
 					marker = L.marker(
 							[hoikuList[i]['latitude'],hoikuList[i]['longitude']],
@@ -171,7 +203,7 @@
 				map.setView([lat/hoikuList.length,long/hoikuList.length], 13); 
 			});
 		}
-		fetchHoikuList({"address_district":"横浜市保土ケ谷区"});
+		//fetchHoikuList({"address_district":"横浜市西区"});
 		var popup = L.popup();
 		function onMarker2Click(e) {
 			popup
@@ -185,10 +217,19 @@
 			if(district && district !== '') {
 				params["address_district"] = district; 
 			}
+
+			var available = document.getElementById('available').checked;
+			if(available) 
+				params["available"] = available;
 			console.log(params);
 			return params;
 		}
 		document.getElementById('districtSelect').addEventListener('change', function() {
+			params = collectParams();
+			removeMarkers();
+			fetchHoikuList(params);
+		});
+		document.getElementById('available').addEventListener('change', function() {
 			params = collectParams();
 			removeMarkers();
 			fetchHoikuList(params);

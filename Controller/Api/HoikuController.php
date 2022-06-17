@@ -26,7 +26,11 @@ class HoikuController extends BaseController
 
                 $where = [];
                 foreach ($arrQueryStringParams as $key => $value){
-                    if(!empty($value)) {
+                    if($key == 'available') {
+                        if($value == true) {
+                            array_push($where, "B.total > 0");
+                        }
+                    } else if(!empty($value)) {
                         array_push($where ,$key." = '".$value."'");     
                     }
                 }
