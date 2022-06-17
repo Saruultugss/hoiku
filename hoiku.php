@@ -71,7 +71,7 @@
 
 							<label class="block">
 								<span class="text-gray-700">保育所名</span>
-								<input type="text" class="
+								<input type="text" id="hoikuName" class="
 									mt-1
 									block
 									w-full
@@ -221,6 +221,12 @@
 			var available = document.getElementById('available').checked;
 			if(available) 
 				params["available"] = available;
+
+			var name = document.getElementById('hoikuName').value;
+			if(name) {
+				params["facility_name"] = name;
+			}
+
 			console.log(params);
 			return params;
 		}
@@ -230,6 +236,11 @@
 			fetchHoikuList(params);
 		});
 		document.getElementById('available').addEventListener('change', function() {
+			params = collectParams();
+			removeMarkers();
+			fetchHoikuList(params);
+		});
+		document.getElementById('hoikuName').addEventListener('focusout', function() {
 			params = collectParams();
 			removeMarkers();
 			fetchHoikuList(params);

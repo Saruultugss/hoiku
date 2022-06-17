@@ -30,6 +30,8 @@ class HoikuController extends BaseController
                         if($value == true) {
                             array_push($where, "B.total > 0");
                         }
+                    } else if($key == 'facility_name') {
+                        array_push($where, "A.facility_name LIKE '%".$value."%'");
                     } else if(!empty($value)) {
                         array_push($where ,$key." = '".$value."'");     
                     }
