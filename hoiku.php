@@ -47,7 +47,7 @@
 									border-transparent
 									focus:border-gray-500 focus:bg-white focus:ring-0
 								">
-									<option></option>
+									<option value="">選択</option>
 								</select>
 							</label>
 
@@ -132,6 +132,8 @@
 			attribution: '©<a href="http://osm.org/copyright">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
 		});
 		tileLayer.addTo(map);
+		var pinPoint = null;
+		var pinPointCircle = null;
 		
 		const removeMarkers = () => {
 			for(var i = 0; i < markers.length; i++) {
@@ -226,25 +228,86 @@
 			if(name) {
 				params["facility_name"] = name;
 			}
+			if(pinPoint) {
+				params = { ...pinPoint.getLatLng(), ...params};
+			}
 
-			console.log(params);
 			return params;
 		}
+
+		//district filter listener
 		document.getElementById('districtSelect').addEventListener('change', function() {
+			map.removeLayer(pinPoint);
+			map.removeLayer(pinPointCircle);
+			pinPoint = null;
+			pinPointCircle = null;
 			params = collectParams();
 			removeMarkers();
 			fetchHoikuList(params);
 		});
+		//availability filter listener
 		document.getElementById('available').addEventListener('change', function() {
 			params = collectParams();
 			removeMarkers();
 			fetchHoikuList(params);
 		});
+		//name filter listener
 		document.getElementById('hoikuName').addEventListener('focusout', function() {
 			params = collectParams();
 			removeMarkers();
 			fetchHoikuList(params);
 		});
+
+		const pinPointData = (latlng) => {
+			document.getElementById('districtSelect').value = "";
+			document.getElementById('hoikuName').value = "";
+			params = collectParams();
+			removeMarkers();
+			fetchHoikuList(params);
+		}
+		
+		function onMapClick(e) {
+			if(pinPoint){
+				pinPoint.setLatLng(e.latlng);
+			} else {
+				pinPoint = new L.marker(e.latlng, {
+					draggable:'true',
+					icon: L.icon({
+						iconUrl: 'leaflet/images/marker-icon-man.png',
+						iconSize:    [25, 41],
+						iconAnchor:  [12, 41],
+						popupAnchor: [1, -34],
+						tooltipAnchor: [16, -28],
+						shadowSize:  [41, 41]
+					})
+				});
+				pinPoint.on('dragend', function(event){
+					var marker = event.target;
+					var position = marker.getLatLng();
+					marker.setLatLng(new L.LatLng(position.lat, position.lng),{draggable:'true'});
+					map.panTo(new L.LatLng(position.lat, position.lng))
+					pinPointCircle.setLatLng(position);
+					pinPointData(position);
+				});
+				map.addLayer(pinPoint);
+			}
+				
+			if(pinPointCircle) {
+				pinPointCircle.setLatLng(e.latlng);
+			} else {
+				pinPointCircle = L.circle(e.latlng, {
+					color: "red",
+					fillColor: "#f03",
+					fillOpacity: 0.1,
+					radius: 2400.0
+				}).addTo(map);
+			}
+			pinPointData();
+		};
+
+		    
+
+		map.on('click', onMapClick);
 		
 	</script>
 

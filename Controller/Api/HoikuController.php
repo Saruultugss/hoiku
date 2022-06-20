@@ -14,10 +14,21 @@ class HoikuController extends BaseController
             try {
 
                 $pdo = new PDO('mysql:host=localhost;dbname=kindergarden','root','');
+
                 $sql = 'SELECT  A.id, A.facility_name, address_prefecture, address_district, address_street ,latitude, 
                 longitude, business_day, quota_0, age_0, quota_1, age_1, quota_2, age_2, quota_3, age_3, quota_4, age_4, 
                 quota_5, age_5, quota_total, B.total, operation_method, phone 
                 FROM facility A LEFT JOIN availability B ON A.id = B.kindergarden_id {WHERE}';
+
+                if(array_key_exists("lat",$arrQueryStringParams) && array_key_exists("lng",$arrQueryStringParams))  {              
+                    $sql = 'SELECT  A.id, A.facility_name, address_prefecture, address_district, address_street ,
+                    business_day, quota_0, age_0, quota_1, age_1, quota_2, age_2, quota_3, age_3, quota_4, age_4, 
+                    quota_5, age_5, quota_total, B.total, operation_method, phone, latitude, longitude, SQRT(
+                    POW(69.1 * (latitude - '.$arrQueryStringParams['lat'].'), 2) +
+                    POW(69.1 * ('.$arrQueryStringParams['lng'].' - longitude) * COS(latitude / 57.3), 2)) AS distance 
+                    FROM facility A LEFT JOIN availability B ON A.id = B.kindergarden_id {WHERE} 
+                    HAVING distance < 1.5 ORDER BY distance';
+                }
                 
                 $intLimit = 10;
                 if (isset($arrQueryStringParams['limit']) && $arrQueryStringParams['limit']) {
@@ -32,7 +43,7 @@ class HoikuController extends BaseController
                         }
                     } else if($key == 'facility_name') {
                         array_push($where, "A.facility_name LIKE '%".$value."%'");
-                    } else if(!empty($value)) {
+                    } else if($key == 'address_district') {
                         array_push($where ,$key." = '".$value."'");     
                     }
                 }
