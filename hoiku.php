@@ -194,7 +194,7 @@
 
 		const jumpCompare = () => {
 			window.open(
-				'compare.php?' + serialize({"compareId" : compareIds}),
+				'compare.php?' + serialize({"ids" : compareIds}),
 				'_blank' // <- This is what makes it open in a new window.
 			);
 		} 
