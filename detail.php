@@ -62,6 +62,7 @@
             ?>
             
             <button onclick="jump()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">検索</button>
+            <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">印刷</button>
         </h1>
         
         <div class="grid grid-cols-2 gap-4">

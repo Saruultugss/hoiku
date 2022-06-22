@@ -21,7 +21,7 @@
 
 			<div class="hidden md:flex flex-col md:flex-row md:ml-auto mt-3 md:mt-0" id="navbar-collapse">
 				<a href="hoiku.php" class="p-2 lg:px-4 md:mx-2 text-gray-600 rounded hover:bg-gray-200 hover:text-gray-700 transition-colors duration-300">ホーム</a>
-				<a href="#" class="p-2 lg:px-4 md:mx-2 text-indigo-600 text-center border border-solid border-indigo-600 rounded hover:bg-indigo-600 hover:text-white transition-colors duration-300 mt-1 md:mt-0 md:ml-1">比較</a>
+				<a href="#" onclick="jumpCompare(); return false;" class="p-2 lg:px-4 md:mx-2 text-indigo-600 text-center border border-solid border-indigo-600 rounded hover:bg-indigo-600 hover:text-white transition-colors duration-300 mt-1 md:mt-0 md:ml-1">比較<i id="compareCount"></i></a>
 			</div>
 			</div>
 		</nav>
@@ -119,6 +119,17 @@
 			return districtList;
 		}
 
+		const postCompareId = async (params) => {
+			const response = await fetch('http://localhost/hoiku/index.php/hoiku/compareadd?' + serialize(params));
+			return response;
+		}
+
+		const getCompareId = async () => {
+			const response = await fetch('http://localhost/hoiku/index.php/hoiku/compareget');
+			const compareId = await response.json();
+			return compareId;
+		}
+
 		var markers = [];
 		//set map container height
 		var mapHeight = screen.height - 250;
@@ -134,6 +145,8 @@
 		tileLayer.addTo(map);
 		var pinPoint = null;
 		var pinPointCircle = null;
+
+		var compareIds = null;
 		
 		const removeMarkers = () => {
 			for(var i = 0; i < markers.length; i++) {
@@ -141,6 +154,8 @@
 			}
 			markers = [];
 		}
+
+		//get filter districts from server
 		getDistrictList().then((districtList) => {
 			var select = document.getElementById('districtSelect');
 			for(var i = 0; i < districtList.length; i++) {
@@ -154,6 +169,35 @@
 			removeMarkers();
 			fetchHoikuList(params);
 		})
+		// get compare ids from sessions
+		getCompareId().then((compareId) => {
+			compareIds = compareId;
+			if(compareIds.length != 0) {
+				document.getElementById("compareCount").innerHTML = "(" + compareIds.length + ")";
+			} else {
+				document.getElementById("compareCount").innerHTML = "";
+			}
+		});
+
+		const addCompare = (params) => {
+			postCompareId({"compareId": params}).then(() => {
+				getCompareId().then((compareId) => {
+					compareIds = compareId;
+					if(compareIds.length != 0) {
+						document.getElementById("compareCount").innerHTML = "(" + compareIds.length + ")";
+					} else {
+						document.getElementById("compareCount").innerHTML = "";
+					}
+				});
+			});
+		}
+
+		const jumpCompare = () => {
+			window.open(
+				'compare.php?' + serialize({"compareId" : compareIds}),
+				'_blank' // <- This is what makes it open in a new window.
+			);
+		} 
 
 		const fetchHoikuList = (params) => { 
 				getHoikuList(params).then((hoikuList) => {
@@ -197,7 +241,8 @@
 							"<p>"+ hoikuList[i]["facility_name"] + "</p>" 
 							+ "<p>電話番号:" + hoikuList[i]["phone"] + "</p>" 
 							+ "<p>入所可能人数: " + hoikuList[i]["total"] +"</p>"
-							+ "<a href='detail.php?id=" + encodeURIComponent(hoikuList[i]["id"]) + "' target='_blank'><p>詳細</p></a>")
+							+ "<a href='detail.php?id=" + encodeURIComponent(hoikuList[i]["id"]) + "' target='_blank'><p>詳細</p></a>"
+							+ "<a href='#' onclick='addCompare(" + hoikuList[i]["id"] + "); return false;'><p>比較バスケに追加</p></a>")
 						.openOn(map);
 
 					});
@@ -237,8 +282,10 @@
 
 		//district filter listener
 		document.getElementById('districtSelect').addEventListener('change', function() {
-			map.removeLayer(pinPoint);
-			map.removeLayer(pinPointCircle);
+			if(pinPoint) {
+				map.removeLayer(pinPoint);
+				map.removeLayer(pinPointCircle);
+			}
 			pinPoint = null;
 			pinPointCircle = null;
 			params = collectParams();

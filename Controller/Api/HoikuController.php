@@ -136,4 +136,77 @@ class HoikuController extends BaseController
             );
         }
     }
+
+    public function compareaddAction() {
+        session_start();
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $arrQueryStringParams = $this->getQueryStringParams();
+ 
+        if (strtoupper($requestMethod) == 'GET') {
+            try {
+                if(!isset($_SESSION["compareId"])) {
+                    $_SESSION["compareId"] = [];
+                }
+                if(!in_array($arrQueryStringParams["compareId"], $_SESSION["compareId"])) {
+                    if(count($_SESSION["compareId"]) > 3) {
+                        array_shift($_SESSION["compareId"]);
+                    }
+                    array_push($_SESSION["compareId"], $arrQueryStringParams["compareId"]);
+                }
+
+            } catch (Error $e) {
+                $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
+                $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+            }
+        } else {
+            $strErrorDesc = 'Method not supported';
+            $strErrorHeader = 'HTTP/1.1 422 Unprocessable Entity';
+        }
+ 
+        // send output
+        if (!$strErrorDesc) {
+            $this->sendOutput(
+                "OK",
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+        } else {
+            $this->sendOutput(json_encode(array('error' => $strErrorDesc)), 
+                array('Content-Type: application/json', $strErrorHeader)
+            );
+        }
+    }
+
+    
+    public function comparegetAction() {
+        session_start();
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $arrQueryStringParams = $this->getQueryStringParams();
+ 
+        if (strtoupper($requestMethod) == 'GET') {
+            try {
+                $responseData = json_encode($_SESSION["compareId"]);
+
+            } catch (Error $e) {
+                $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
+                $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+            }
+        } else {
+            $strErrorDesc = 'Method not supported';
+            $strErrorHeader = 'HTTP/1.1 422 Unprocessable Entity';
+        }
+ 
+        // send output
+        if (!$strErrorDesc) {
+            $this->sendOutput(
+                $responseData,
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+        } else {
+            $this->sendOutput(json_encode(array('error' => $strErrorDesc)), 
+                array('Content-Type: application/json', $strErrorHeader)
+            );
+        }
+    }
 }
