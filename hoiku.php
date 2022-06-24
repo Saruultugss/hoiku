@@ -242,7 +242,7 @@
 							+ "<p>電話番号:" + hoikuList[i]["phone"] + "</p>" 
 							+ "<p>入所可能人数: " + hoikuList[i]["total"] +"</p>"
 							+ "<a href='detail.php?id=" + encodeURIComponent(hoikuList[i]["id"]) + "' target='_blank'><p>詳細</p></a>"
-							+ "<a href='#' onclick='addCompare(" + hoikuList[i]["id"] + "); return false;'><p>比較バスケに追加</p></a>")
+							+ "<a href='#' onclick='addCompare(" + hoikuList[i]["id"] + "); return false;'><p>比較リストに追加</p></a>")
 						.openOn(map);
 
 					});
